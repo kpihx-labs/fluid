@@ -38,7 +38,12 @@ The `purge.sh` script is designed to be **symmetrically radical**. It targets:
 3.  **Filesystem**: `rm -rf` on all data directories mentioned in Facet 1.
 4.  **Result**: The host returns to a 100% pre-deployment state.
 
-### 2.2 Agnosticism Rules
+### 2.2 Functional Hierarchy (Hive-Mind)
+- **Masters**: Participate in the CockroachDB mesh. They hold the cluster state and manage the control plane. Current masters: PVE, Ubuntu, S25, Tablet.
+- **Minions**: Future compute-only nodes. They point to the Master Mesh and run application workloads (Alpha, Beta, Gamma) without holding database state.
+- **Resource Priority**: Alpha services (Quorum) are protected by `PriorityClasses` (1000). Beta services are subject to evictions and KEDA scale-to-0 policies.
+
+### 2.3 Agnosticism Rules
 - **Convention over Configuration**: Scripts follow `$NODE_OS.sh` naming.
 - **WSL Standard**: Windows is treated as a Linux instance through WSL2. The `wsl.sh` scripts are wrappers for `linux.sh`.
 - **Single Source of Truth**: All variables are resolved via `config.env` and `hosts.json`.

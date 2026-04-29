@@ -2,9 +2,10 @@
 # -----------------------------------------------------------------------------
 # 🧠 DATASTORE > LINUX (CockroachDB Mesh - Role Aware)
 # -----------------------------------------------------------------------------
-# PURPOSE: Deploys CockroachDB only on Masters.
-# WHY: In a Master/Minion architecture, the state layer is managed by the 
-# Core Masters. Minions don't store data but point to the Masters.
+# PURPOSE: Deploys a Lean CockroachDB node to form a distributed SQL mesh.
+# WHY: In a 100% decentralized cluster, the state layer MUST be multi-master.
+# CockroachDB ensures that if any node falls, the cluster continues with 
+# 100% data integrity. We optimize for low resource usage (Lean Mode).
 # -----------------------------------------------------------------------------
 
 set -e
@@ -17,6 +18,7 @@ echo "--- 🧠 DATASTORE INITIALIZATION ($NODE_NAME - Role: $NODE_ROLE) ---"
 
 if [ "$NODE_ROLE" == "master" ]; then
     # 1. Binary Installation
+    # WHY: We use the official binary for maximum stability and performance.
     if ! command -v cockroach &> /dev/null; then
         echo "[Action] Installing CockroachDB $COCKROACH_VERSION..."
         curl https://binaries.cockroachdb.com/cockroach-${COCKROACH_VERSION}.linux-amd64.tgz | tar -xz
@@ -24,7 +26,10 @@ if [ "$NODE_ROLE" == "master" ]; then
         rm -rf cockroach-${COCKROACH_VERSION}.linux-amd64
     fi
 
-    # 2. Service Launch
+    # 2. Service Launch (Insecure Mesh for Sovereign Internal Network)
+    # WHY: We use '--insecure' because we are already inside the Tailscale 
+    # encrypted mesh. This simplifies management without sacrificing security.
+    # '--cache=128Mi' and '--max-sql-memory=128Mi' ensure minimal RAM footprint.
     mkdir -p "$HOME/cockroach-data"
     JOIN_LIST=$(get_db_join_list)
     
@@ -48,6 +53,7 @@ if [ "$NODE_ROLE" == "master" ]; then
     cockroach init --insecure --host="$NODE_IP" || echo "[INFO] Cluster already initialized."
 
     # 4. Database Schema
+    # WHY: We create the K3s state schema once the mesh is initialized.
     cockroach sql --insecure --host="$NODE_IP" -e "CREATE DATABASE IF NOT EXISTS $DB_NAME;" || true
     echo "--- ✅ MASTER DATASTORE IS ONLINE ---"
 else

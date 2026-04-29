@@ -1,0 +1,23 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: fluid-alpha
+value: 1000
+globalDefault: false
+description: "Vital Services (Quorum, Networking, State). Cannot be evicted."
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: fluid-beta
+value: 500
+globalDefault: false
+description: "Compute Services. Can be evicted to save Alpha services."
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: fluid-gamma
+value: 100
+globalDefault: false
+description: "OS Specific / Non-critical tools. First to be evicted."

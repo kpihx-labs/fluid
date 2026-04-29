@@ -7,10 +7,33 @@
 # -----------------------------------------------------------------------------
 
 set -e
+# 1. Identity & Path Resolution
+# -----------------------------------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TARGET_NODE=$1
+
+if [ -z "$TARGET_NODE" ]; then
+    echo "[ERROR] Usage: ./purge.sh <NODE_NAME> (must match hosts.json)"
+    exit 1
+fi
+
 source "$SCRIPT_DIR/../config.env"
 
-# 1. Sovereign Confirmation Prompt
+# 2. Identity Guard (Anti-Accidental Wipe)
+# -----------------------------------------------------------------------------
+if [ "$NODE_NAME" != "$TARGET_NODE" ]; then
+    echo "[ERROR] Identity Mismatch! You are trying to purge '$TARGET_NODE' but this host is detected as '$NODE_NAME'."
+    exit 1
+fi
+
+# Check IP for extra safety
+REAL_TS_IP=$(ip -4 addr show tailscale0 2>/dev/null | grep -oP '(?<=inet\s)\d+(\.\d+){3}' || echo "UNKNOWN")
+if [ "$REAL_TS_IP" != "$NODE_IP" ]; then
+    echo "[ERROR] IP Guard! Purge aborted. tailscale0 IP mismatch."
+    exit 1
+fi
+
+# 3. Sovereign Confirmation Prompt
 # -----------------------------------------------------------------------------
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo "⚠️  NUCLEAR PURGE ON $NODE_NAME ($NODE_OS) ⚠️"

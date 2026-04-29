@@ -1,6 +1,6 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
-# 📦 PLATFORM > 02_KEDA (keda.sh)
+# 📦 PLATFORM > CORE > 02_KEDA (02_keda.sh)
 # -----------------------------------------------------------------------------
 # PURPOSE: Installs KEDA for "Sleep Strategy" (Scale-to-0).
 # WHY: To keep the cluster hyper-lean, non-used services must consume 0 resources.
@@ -8,11 +8,10 @@
 
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/../../config.env"
+source "$SCRIPT_DIR/../../../config.env"
 
 echo "--- 📦 INSTALLING KEDA AUTO-SCALER ---"
 
-# WHY: We use Helm for KEDA as it is the most stable installation method.
 if ! command -v helm &> /dev/null; then
     echo "[ERROR] Helm not found. Please run prepare_os first."
     exit 1
