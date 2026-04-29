@@ -25,8 +25,6 @@ fi
 # -----------------------------------------------------------------------------
 if [ -f "$SCRIPT_DIR/99_purge/${NODE_OS}.sh" ]; then
     bash "$SCRIPT_DIR/99_purge/${NODE_OS}.sh"
-elif [ -f "$SCRIPT_DIR/99_purge/${NODE_OS}.ps1" ]; then
-    pwsh "$SCRIPT_DIR/99_purge/${NODE_OS}.ps1"
 else
     echo "[ERROR] No purge implementation found for $NODE_OS."
     exit 1

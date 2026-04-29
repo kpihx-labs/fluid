@@ -1,6 +1,6 @@
 # 🚀 Fluid-K3s: Universal Federation Deployment Guide
 
-This guide provides the agnostic, hyper-documented procedure for deploying a high-availability, 1-node survival cluster across Linux, macOS, and Windows.
+This guide provides the agnostic, hyper-documented procedure for deploying a high-availability, 1-node survival cluster across Linux, macOS, and WSL2.
 
 ---
 
@@ -41,10 +41,10 @@ bash scripts/1-launch.sh server-init
 bash scripts/1-launch.sh server-join
 ```
 
-### 1.2 Joining specialized nodes (Windows & Mac)
+### 1.2 Joining specialized nodes (WSL2 & Mac)
 These nodes join the federation via the Virtual IP API.
 ```bash
-# On Windows SSD (WSL2) or Mac Studio (Lima)
+# On WSL2 SSD (WSL2) or Mac Studio (Lima)
 VM_NAME_PREFIX=$MASTER_3_HOST bash scripts/1-launch.sh server-join
 ```
 

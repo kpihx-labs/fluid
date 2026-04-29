@@ -30,7 +30,7 @@
     },
     {
       "name": "windows",
-      "os": "windows",
+      "os": "wsl",
       "tailscale_ip": "100.x.x.x",
       "vxlan_ip": "10.20.20.3"
     },

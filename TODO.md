@@ -6,7 +6,7 @@
 - [ ] **Health Checks**: Automate heartbeats from CockroachDB Mesh to Telegram.
 
 ## 🛰️ Platform Extensions
-- [ ] **Windows Hyper-V**: Finalize the `00_provision_vm/windows.ps1` logic for automated node spawning.
+- [ ] **WSL2 Integration**: Finalize the `00_provision_vm/wsl.sh` logic for automated node spawning.
 - [ ] **Android Optimization**: Implement battery-aware CockroachDB start/stop for mobile nodes.
 - [ ] **NFS Persistence**: Automate the setup of decentralized NFS mounts on top of the VXLAN mesh.
 

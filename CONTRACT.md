@@ -40,6 +40,7 @@ The `purge.sh` script is designed to be **symmetrically radical**. It targets:
 
 ### 2.2 Agnosticism Rules
 - **Convention over Configuration**: Scripts follow `$NODE_OS.sh` naming.
+- **WSL Standard**: Windows is treated as a Linux instance through WSL2. The `wsl.sh` scripts are wrappers for `linux.sh`.
 - **Single Source of Truth**: All variables are resolved via `config.env` and `hosts.json`.
 - **Privilege**: Standard audited `sudo` only. No proprietary gateways.
 

@@ -3,7 +3,7 @@
 # 🚀 MASTER INSTALLER (install.sh) - 100% AGNOSTIC & CONVENTION-BASED
 # -----------------------------------------------------------------------------
 # PURPOSE: Automatically sequences the construction of the entire federation.
-# WHY: By following a strict naming convention ($NODE_OS.sh or $NODE_OS.ps1),
+# WHY: By following a strict naming convention ($NODE_OS.sh),
 # we remove complex conditional logic and allow instant scaling to new OS types.
 # -----------------------------------------------------------------------------
 
@@ -35,14 +35,9 @@ run_phase() {
     
     echo "--- Phase: $phase_name ---"
     
-    # WHY: We check for .sh first, then .ps1 for early bootstrap phases.
+    # WHY: We follow the $NODE_OS.sh convention for total agnosticism.
     if [ -f "$phase_path/${NODE_OS}.sh" ]; then
         bash "$phase_path/${NODE_OS}.sh"
-    elif [ -f "$phase_path/${NODE_OS}.ps1" ]; then
-        echo "[INFO] Running PowerShell script for $NODE_OS..."
-        # NOTE: This assumes pwsh is available if we are on a non-Windows host 
-        # doing remote provisioning, or run locally on Windows.
-        pwsh "$phase_path/${NODE_OS}.ps1"
     else
         echo "[SKIP] No specific script found for $NODE_OS in $phase_name."
     fi

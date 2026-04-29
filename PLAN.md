@@ -30,7 +30,7 @@ Nous utilisons des **PriorityClasses** pour orchestrer la survie des services :
 
 ### 🔵 Classe Gamma : Services Spécifiques (Priorité 100)
 *   **Comportement :** Liés à un OS spécifique (NodeAffinity). Data sauvegardée en continu.
-*   **Exemples :** Logiciels propriétaires Windows, Outils Mac.
+*   **Exemples :** Logiciels propriétaires WSL2, Outils Mac.
 
 ---
 
