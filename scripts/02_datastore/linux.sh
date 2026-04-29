@@ -1,72 +1,56 @@
 #!/bin/bash
 # -----------------------------------------------------------------------------
-# 🧠 DATASTORE > LINUX (CockroachDB Mesh)
+# 🧠 DATASTORE > LINUX (CockroachDB Mesh - Role Aware)
 # -----------------------------------------------------------------------------
-# PURPOSE: Deploys a Lean CockroachDB node to form a distributed SQL mesh.
-# WHY: In a 100% decentralized cluster, the state layer MUST be multi-master.
-# CockroachDB ensures that if any node falls, the cluster continues with 
-# 100% data integrity. We optimize for low resource usage (Lean Mode).
+# PURPOSE: Deploys CockroachDB only on Masters.
+# WHY: In a Master/Minion architecture, the state layer is managed by the 
+# Core Masters. Minions don't store data but point to the Masters.
 # -----------------------------------------------------------------------------
 
 set -e
-
-# 1. Environment Loading
-# -----------------------------------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../../config.env"
 
 run_privileged() { $SUDO_CMD "$@"; }
 
-echo "--- 🧠 INITIALIZING LEAN COCKROACH MESH NODE ($NODE_NAME) ---"
+echo "--- 🧠 DATASTORE INITIALIZATION ($NODE_NAME - Role: $NODE_ROLE) ---"
 
-# 2. Binary Installation
-# -----------------------------------------------------------------------------
-# WHY: We use the official binary for maximum stability and performance.
-if ! command -v cockroach &> /dev/null; then
-    echo "[Step 1] Installing CockroachDB $COCKROACH_VERSION..."
-    curl https://binaries.cockroachdb.com/cockroach-${COCKROACH_VERSION}.linux-amd64.tgz | tar -xz
-    run_privileged cp -i cockroach-${COCKROACH_VERSION}.linux-amd64/cockroach /usr/local/bin/
-    rm -rf cockroach-${COCKROACH_VERSION}.linux-amd64
-fi
+if [ "$NODE_ROLE" == "master" ]; then
+    # 1. Binary Installation
+    if ! command -v cockroach &> /dev/null; then
+        echo "[Action] Installing CockroachDB $COCKROACH_VERSION..."
+        curl https://binaries.cockroachdb.com/cockroach-${COCKROACH_VERSION}.linux-amd64.tgz | tar -xz
+        run_privileged cp -i cockroach-${COCKROACH_VERSION}.linux-amd64/cockroach /usr/local/bin/
+        rm -rf cockroach-${COCKROACH_VERSION}.linux-amd64
+    fi
 
-# 3. Lean Configuration & Data Directories
-# -----------------------------------------------------------------------------
-# WHY: We restrict cache and memory to keep the host "silent" and responsive.
-mkdir -p "$HOME/cockroach-data"
-JOIN_LIST=$(get_db_join_list)
+    # 2. Service Launch
+    mkdir -p "$HOME/cockroach-data"
+    JOIN_LIST=$(get_db_join_list)
+    
+    echo "[Action] Launching Master Peer (Joining: $JOIN_LIST)..."
+    run_privileged pkill -9 cockroach || true
 
-# 4. Service Launch (Insecure Mesh for Sovereign Internal Network)
-# -----------------------------------------------------------------------------
-# WHY: We use '--insecure' because we are already inside the Tailscale 
-# encrypted mesh. This simplifies management without sacrificing security.
-# '--cache=128Mi' and '--max-sql-memory=128Mi' ensure minimal RAM footprint.
-echo "[Step 2] Launching CockroachDB Peer (Joining: $JOIN_LIST)..."
-run_privileged pkill -9 cockroach || true
+    nohup cockroach start \
+        --insecure \
+        --store="$HOME/cockroach-data" \
+        --listen-addr="$NODE_IP:$DB_PORT" \
+        --http-addr="$NODE_IP:$DB_HTTP_PORT" \
+        --join="$JOIN_LIST" \
+        --cache=128Mi \
+        --max-sql-memory=128Mi \
+        --background > "$HOME/cockroach.log" 2>&1
 
-# WHY: We run it as a background process. For prod, we'll use a systemd unit.
-nohup cockroach start \
-    --insecure \
-    --store="$HOME/cockroach-data" \
-    --listen-addr="$NODE_IP:$DB_PORT" \
-    --http-addr="$NODE_IP:$DB_HTTP_PORT" \
-    --join="$JOIN_LIST" \
-    --cache=128Mi \
-    --max-sql-memory=128Mi \
-    --background > "$HOME/cockroach.log" 2>&1
-
-# 5. Initialization (Only on the first node)
-# -----------------------------------------------------------------------------
-# WHY: One node must trigger the 'init' to form the cluster.
-if [ "$NODE_NAME" == "pve" ]; then
-    echo "[Step 3] Initializing the State Mesh..."
+    # 3. Initialization (Peer-to-Peer)
+    # WHY: Any Master can attempt to init. Idempotent.
+    echo "[Step 3] Attempting State Mesh Initialization..."
     sleep 5
-    cockroach init --insecure --host="$NODE_IP" || true
+    cockroach init --insecure --host="$NODE_IP" || echo "[INFO] Cluster already initialized."
+
+    # 4. Database Schema
+    cockroach sql --insecure --host="$NODE_IP" -e "CREATE DATABASE IF NOT EXISTS $DB_NAME;" || true
+    echo "--- ✅ MASTER DATASTORE IS ONLINE ---"
+else
+    echo "--- ℹ️ NODE ROLE IS MINION: NO LOCAL DATASTORE DEPLOYED ---"
+    echo "--- Minion will point to Masters: $(get_db_join_list) ---"
 fi
-
-# 6. Database & User Provisioning
-# -----------------------------------------------------------------------------
-echo "[Step 4] Creating K3s state schema..."
-sleep 5
-cockroach sql --insecure --host="$NODE_IP" -e "CREATE DATABASE IF NOT EXISTS $DB_NAME;" || true
-
-echo "--- ✅ STATE MESH NODE IS ONLINE ---"

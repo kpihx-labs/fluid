@@ -19,7 +19,7 @@ source "$SCRIPT_DIR/../config.env"
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo "⚠️  FLUID-K3S SOVEREIGN INSTALLATION : $NODE_NAME ⚠️"
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-echo "Host: $(hostname) | OS: $NODE_OS | IP: $NODE_IP"
+echo "Host: $(hostname) | OS: $NODE_OS | Role: $NODE_ROLE | IP: $NODE_IP"
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 read -p "Proceed with federation entry? (y/N): " CONFIRM
 if [[ ! "$CONFIRM" =~ ^[yY]$ ]]; then
@@ -57,8 +57,11 @@ run_phase "$SCRIPT_DIR/03_engine"
 # -----------------------------------------------------------------------------
 if [ "$NODE_NAME" == "pve" ]; then
     echo "--- Phase: 04_platform ---"
+    bash "$SCRIPT_DIR/04_platform/rules.sh"
     bash "$SCRIPT_DIR/04_platform/longhorn.sh"
+    bash "$SCRIPT_DIR/04_platform/keda.sh"
     bash "$SCRIPT_DIR/04_platform/external_secrets.sh"
+    bash "$SCRIPT_DIR/04_platform/telegram.sh"
 fi
 
 echo "--- ✅ FEDERATION ENTRY COMPLETE FOR $NODE_NAME ---"
