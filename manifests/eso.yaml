@@ -1,0 +1,16 @@
+# KpihX-Labs: ClusterSecretStore (Bitwarden Bridge)
+# WHY: This resource allows any namespace in the cluster to request secrets from Bitwarden.
+# It points to your sovereign 'bw-proxy' managed by Traefik.
+
+apiVersion: external-secrets.io/v1beta1
+kind: ClusterSecretStore
+metadata:
+  name: bitwarden-sovereign
+spec:
+  provider:
+    webhook:
+      url: "https://vault.kpihx-labs.com/api/v2/proxy"
+      result:
+        jsonPath: "$.data"
+      headers:
+        Content-Type: "application/json"

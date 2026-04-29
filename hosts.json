@@ -1,0 +1,44 @@
+{
+  "nodes": [
+    {
+      "name": "pve",
+      "os": "pve",
+      "tailscale_ip": "100.123.81.21",
+      "vxlan_ip": "10.20.20.1",
+      "description": "Proxmox Host - Federation Peer"
+    },
+    {
+      "name": "ubuntu",
+      "os": "ubuntu",
+      "tailscale_ip": "100.82.95.70",
+      "vxlan_ip": "10.20.20.2",
+      "description": "Ubuntu Workstation - Federation Peer"
+    },
+    {
+      "name": "s25",
+      "os": "android",
+      "tailscale_ip": "100.125.54.1",
+      "vxlan_ip": "10.20.20.5",
+      "description": "S25 Ultra (16GB RAM) - Mobile Federation Peer"
+    },
+    {
+      "name": "tablet",
+      "os": "android",
+      "tailscale_ip": "100.89.79.87",
+      "vxlan_ip": "10.20.20.6",
+      "description": "Tablet - Mobile Witness Peer"
+    },
+    {
+      "name": "windows",
+      "os": "windows",
+      "tailscale_ip": "100.x.x.x",
+      "vxlan_ip": "10.20.20.3"
+    },
+    {
+      "name": "mac",
+      "os": "mac",
+      "tailscale_ip": "100.x.x.x",
+      "vxlan_ip": "10.20.20.4"
+    }
+  ]
+}
