@@ -29,16 +29,16 @@
       "description": "Tablet - Mobile Witness Peer"
     },
     {
-      "name": "windows",
-      "os": "wsl",
-      "tailscale_ip": "100.x.x.x",
-      "vxlan_ip": "10.20.20.3"
-    },
-    {
       "name": "mac",
       "os": "mac",
       "tailscale_ip": "100.x.x.x",
       "vxlan_ip": "10.20.20.4"
+    },
+    {
+      "name": "windows",
+      "os": "wsl",
+      "tailscale_ip": "100.x.x.x",
+      "vxlan_ip": "10.20.20.3"
     }
   ]
 }
