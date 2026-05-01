@@ -54,3 +54,7 @@ if ! fluid_package_present python3-yaml; then
 fi
 
 fluid_run_privileged "Enable Docker engine for Fluid" systemctl enable --now docker
+if ! groups "$USER" | grep -q '\bdocker\b'; then
+  fluid_run_privileged "Add user to docker group" usermod -aG docker "$USER"
+  fluid_warn "User $USER added to docker group. You may need to log out and log back in for permissions to apply locally."
+fi
