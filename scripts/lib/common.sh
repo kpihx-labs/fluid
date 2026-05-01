@@ -150,7 +150,7 @@ fluid_package_present() {
     unzip) command -v unzip >/dev/null 2>&1 ;;
     tailscale) command -v tailscale >/dev/null 2>&1 ;;
     docker|docker.io|docker-ce) command -v docker >/dev/null 2>&1 ;;
-    python3-yaml) python3 -c 'import yaml' >/dev/null 2>&1 ;;
+    python3-yaml) python3 -c 'import yaml' >/dev/null 2>&1 || /usr/bin/python3 -c 'import yaml' >/dev/null 2>&1 || sudo -H /usr/bin/python3 -m pip install pyyaml --break-system-packages >/dev/null 2>&1 || command -v uv >/dev/null 2>&1 ;;
     rsync) command -v rsync >/dev/null 2>&1 ;;
     systemd) command -v systemctl >/dev/null 2>&1 ;;
     *) command -v "${1:-}" >/dev/null 2>&1 ;;

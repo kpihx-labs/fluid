@@ -20,6 +20,11 @@ project_python_cmd() {
     return 0
   fi
 
+  if /usr/bin/python3 -c 'import yaml' >/dev/null 2>&1; then
+    PROJECT_PY_CMD=(/usr/bin/python3)
+    return 0
+  fi
+
   if command -v uv >/dev/null 2>&1; then
     PROJECT_PY_CMD=(uv run --quiet --with pyyaml python)
     return 0

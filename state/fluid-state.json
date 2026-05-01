@@ -1,11 +1,14 @@
 {
   "version": 1,
   "authority_set": [
-    "pve",
     "ubuntu"
   ],
   "retired_hosts": [],
   "last_backup": "20260501-230001",
   "portable_truth_generation": 1,
-  "notes": "Mutable lifecycle state. Inventory is the durable topology declaration."
+  "notes": "Mutable lifecycle state. Inventory is the durable topology declaration.",
+  "manager_host": "ubuntu",
+  "manager_advertise_addr": "100.82.95.70",
+  "manager_join_token": "SWMTKN-1-3q8gj4gw6ztfa13t58txnyp4yjj4han96b96rdk13zdpepye5q-5quo8e7nle0xutl9zbto12tuf",
+  "worker_join_token": "SWMTKN-1-3q8gj4gw6ztfa13t58txnyp4yjj4han96b96rdk13zdpepye5q-0s7rpvbgbcu8zmwds3iittnzq"
 }
