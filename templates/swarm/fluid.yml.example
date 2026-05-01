@@ -1,0 +1,10 @@
+stack: example-app
+compose:
+  - docker-compose.yml
+services:
+  app:
+    replicas: 1
+    constraints:
+      - node.labels.fluid.class == app
+    preferences:
+      - spread: node.labels.fluid.site

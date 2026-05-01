@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "authority_set": [
+    "pve",
+    "ubuntu"
+  ],
+  "retired_hosts": [],
+  "last_backup": "20260501-230001",
+  "portable_truth_generation": 1,
+  "notes": "Mutable lifecycle state. Inventory is the durable topology declaration."
+}

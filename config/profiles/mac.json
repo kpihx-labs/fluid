@@ -1,0 +1,34 @@
+{
+  "platform": "mac",
+  "survivor_capable": true,
+  "execution_capable": true,
+  "authority_eligible": false,
+  "capabilities": {
+    "swarm_manager": false,
+    "swarm_worker": true,
+    "continuity_host": false,
+    "portable_truth_replica": true,
+    "artifact_cache": true,
+    "snapshot_store": false
+  },
+  "policy": {
+    "promotion_weight": 80,
+    "resource_profile": "ai",
+    "availability_profile": "stable",
+    "continuity_tier": "standard",
+    "service_classes_allowed": ["app", "tool", "ai"],
+    "authority_policy": "manual-only"
+  },
+  "swarm": {
+    "labels": {
+      "fluid.class": "ai",
+      "fluid.gpu": "true",
+      "fluid.storage": "local"
+    }
+  },
+  "runtime": {
+    "supports_swarm_install": false,
+    "supports_swarm_apply": false,
+    "supports_continuity_apply": false
+  }
+}

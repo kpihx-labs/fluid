@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "$ROOT_DIR/scripts/lib/common.sh"
+source "$ROOT_DIR/scripts/lib/inventory.sh"
+
+host="${1:-}"
+[ -n "$host" ] || fluid_die "Usage: ./fluid.sh retire <host>"
+fluid_host_exists "$host" || fluid_die "Unknown host '$host'."
+
+fluid_state_bootstrap
+fluid_require_writable_state
+"$ROOT_DIR/scripts/runtime/swarm.sh" retire "$host"
+fluid_info "Retired '$host' from Fluid."

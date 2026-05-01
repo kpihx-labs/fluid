@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "defaults": {
+    "authority_size": 3,
+    "minimum_authority_size": 1
+  },
+  "requirements": {
+    "survivor_capable": true,
+    "authority_eligible": true,
+    "swarm_manager": true
+  }
+}
