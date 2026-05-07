@@ -1,0 +1,10 @@
+{
+  "extends": "linux",
+  "platform": "debian",
+  "role": "manager",
+  "survivor_capable": true,
+  "authority_eligible": true,
+  "continuity_enabled": true,
+  "portable_truth_replica": true,
+  "authority_weight": 100
+}

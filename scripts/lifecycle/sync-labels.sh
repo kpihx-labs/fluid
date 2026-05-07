@@ -12,4 +12,4 @@ if [ -n "$target_host" ]; then
   fluid_host_exists "$target_host" || fluid_die "Unknown host '$target_host'."
 fi
 
-"$ROOT_DIR/scripts/runtime/swarm.sh" sync-labels "$target_host"
+bash "$ROOT_DIR/scripts/runtime/swarm.sh" sync-labels "$target_host"

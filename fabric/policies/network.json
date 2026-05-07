@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "underlay": {
+    "type": "tailscale",
+    "interface": "tailscale0",
+    "require": true,
+    "status_command": "tailscale status --json"
+  },
+  "fluid": {
+    "advertise_mode": "tailscale-ip"
+  }
+}

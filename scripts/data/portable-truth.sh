@@ -16,7 +16,7 @@ portable_truth_snapshot() {
   fluid_state_bootstrap
   fluid_require_writable_state
   fluid_ensure_dir "$FLUID_BACKUP_DIR"
-  fluid_ensure_dir "$FLUID_RENDERED_DIR"
+  fluid_ensure_dir "$FLUID_RENDER_DIR"
 
   local ts archive repo_parent repo_name
   ts="$(date +%Y%m%d-%H%M%S)"
@@ -24,32 +24,23 @@ portable_truth_snapshot() {
   repo_parent="$(dirname "$FLUID_ROOT")"
   repo_name="$(basename "$FLUID_ROOT")"
 
-  local include_runtime_rendered=()
-  local include_reference=()
-
-  if [ "$FLUID_BACKUP_INCLUDE_RUNTIME_RENDERED" = "true" ]; then
-    include_runtime_rendered+=("$repo_name/runtime/rendered")
-  fi
-
-  if [ "$FLUID_BACKUP_INCLUDE_REFERENCE" = "true" ]; then
-    include_reference+=("$repo_name/reference")
-  fi
-
   fluid_run tar -czf "$archive" -C "$repo_parent" \
     "$repo_name/README.md" \
     "$repo_name/CONTRACT.md" \
+    "$repo_name/LIFECYCLE.md" \
     "$repo_name/CHANGELOG.md" \
     "$repo_name/TODO.md" \
     "$repo_name/.gitignore" \
-    "$repo_name/config" \
+    "$repo_name/fabric" \
+    "$repo_name/docs" \
     "$repo_name/state" \
+    "$repo_name/render" \
     "$repo_name/fluid.sh" \
     "$repo_name/install.sh" \
     "$repo_name/uninstall.sh" \
     "$repo_name/scripts" \
     "$repo_name/templates" \
-    "${include_runtime_rendered[@]}" \
-    "${include_reference[@]}"
+    "$repo_name/adapters"
 
   if [ "${FLUID_DRY_RUN}" != "true" ]; then
     local tmp
@@ -100,10 +91,10 @@ portable_truth_validate_restore() {
 
   [ -f "$restored_root/README.md" ] || fluid_die "Restore validation failed: README.md missing."
   [ -f "$restored_root/CONTRACT.md" ] || fluid_die "Restore validation failed: CONTRACT.md missing."
-  [ -f "$restored_root/config/fluid.env" ] || fluid_die "Restore validation failed: config/fluid.env missing."
-  [ -f "$restored_root/config/hosts.json" ] || fluid_die "Restore validation failed: config/hosts.json missing."
+  [ -f "$restored_root/fabric/defaults.env" ] || fluid_die "Restore validation failed: fabric/defaults.env missing."
+  [ -f "$restored_root/fabric/hosts.json" ] || fluid_die "Restore validation failed: fabric/hosts.json missing."
   [ -d "$restored_root/scripts" ] || fluid_die "Restore validation failed: scripts/ missing."
-  [ -f "$restored_root/state/fluid-state.json" ] || fluid_die "Restore validation failed: state file missing."
+  [ -f "$restored_root/state/cluster-state.json" ] || fluid_die "Restore validation failed: state file missing."
   [ -d "$restored_root/templates" ] || fluid_die "Restore validation failed: templates/ missing."
 
   fluid_info "Restore validation passed in: $validation_root"

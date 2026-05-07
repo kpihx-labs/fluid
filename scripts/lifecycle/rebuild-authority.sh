@@ -7,7 +7,7 @@ source "$ROOT_DIR/scripts/lib/inventory.sh"
 
 fluid_state_bootstrap
 fluid_info "Rebuilding the authority set from the live Swarm manager list."
-"$ROOT_DIR/scripts/runtime/swarm.sh" sync-labels
+bash "$ROOT_DIR/scripts/runtime/swarm.sh" sync-labels
 
 if fluid_authority_set | grep -q .; then
   fluid_info "Authority rebuilt as: $(fluid_authority_set | paste -sd ',' -)"

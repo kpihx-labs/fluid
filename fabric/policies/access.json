@@ -1,0 +1,44 @@
+{
+  "version": 2,
+  "principals": {
+    "owner": ["group:admin"],
+    "elevated": ["group:admin"],
+    "members": ["group:fluid-members"],
+    "guests": ["group:fluid-guests"]
+  },
+  "defaults": {
+    "use": ["owner", "members"],
+    "observe": ["owner", "elevated"],
+    "modify": ["owner", "elevated"],
+    "deploy": ["owner", "elevated"]
+  },
+  "layers": {
+    "network": "tailscale-policy-file",
+    "http": "service-auth",
+    "deploy": "docker-swarm"
+  },
+  "tailscale": {
+    "managed_rules": [
+      {
+        "comment": "Owner access to all Fluid hosts",
+        "action": "accept",
+        "src": ["group:admin"],
+        "dst": ["fluid:all:*"]
+      },
+      {
+        "comment": "Authority hosts exchange Docker Swarm control traffic",
+        "action": "accept",
+        "proto": "tcp",
+        "src": ["tag:server"],
+        "dst": ["fluid:authority:2377", "fluid:authority:7946"]
+      },
+      {
+        "comment": "Authority hosts exchange Docker Swarm overlay traffic",
+        "action": "accept",
+        "proto": "udp",
+        "src": ["tag:server"],
+        "dst": ["fluid:authority:7946", "fluid:authority:4789"]
+      }
+    ]
+  }
+}

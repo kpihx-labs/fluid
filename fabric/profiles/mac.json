@@ -1,0 +1,16 @@
+{
+  "platform": "mac",
+  "role": "worker",
+  "survivor_capable": true,
+  "authority_eligible": false,
+  "continuity_enabled": false,
+  "portable_truth_replica": true,
+  "authority_weight": 80,
+  "labels": {
+    "fluid.storage": "local",
+    "fluid.gpu": "true"
+  },
+  "runtime": {
+    "supports_continuity_apply": false
+  }
+}

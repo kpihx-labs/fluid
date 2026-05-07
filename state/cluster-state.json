@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "cluster_name": "fluid",
+  "manager_host": null,
+  "manager_advertise_addr": null,
+  "authority_set": [],
+  "worker_join_token": null,
+  "manager_join_token": null,
+  "retired_hosts": [],
+  "last_backup": "20260507-233759",
+  "portable_truth_generation": 1,
+  "notes": "Mutable runtime state for the Fluid cluster."
+}

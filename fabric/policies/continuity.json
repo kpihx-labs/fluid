@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "defaults": {
+    "enabled": true,
+    "backup_on_calendar": "hourly"
+  },
+  "components": {
+    "state_guard": true,
+    "authority_marker": true,
+    "backup_trigger": true,
+    "recovery_shell": true
+  }
+}

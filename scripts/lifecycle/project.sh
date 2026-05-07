@@ -44,10 +44,12 @@ project_manager_docker() {
     return 0
   fi
 
-  local manager_host ssh_target
+  local manager_host tailscale_name
   manager_host="$(fluid_manager_host)"
-  ssh_target="$(fluid_host_ssh_target "$manager_host")"
-  docker --host "ssh://$USER@$ssh_target" "$@"
+  [ -n "$manager_host" ] || fluid_die "Fluid manager host is unknown."
+  tailscale_name="$(fluid_host_tailscale_name "$manager_host")"
+  [ -n "$tailscale_name" ] || fluid_die "Manager host '$manager_host' has no tailscale_name."
+  docker --host "ssh://$tailscale_name" "$@"
 }
 
 project_parse() {
@@ -108,6 +110,7 @@ payload = {
     "stack": stack,
     "compose_files": compose_files,
     "services": services,
+    "access": cfg.get("access") or {},
     "with_registry_auth": bool((cfg.get("deploy") or {}).get("with_registry_auth", os.environ.get("FLUID_PROJECT_DEPLOY_WITH_REGISTRY_AUTH", "true").lower() == "true")),
 }
 
@@ -143,6 +146,7 @@ for service_name, cfg in meta["services"].items():
     cfg = cfg or {}
     deploy = dict(cfg.get("deploy") or {})
     placement = dict(deploy.get("placement") or {})
+    service_doc = {}
 
     constraints = cfg.get("constraints")
     if constraints is not None:
@@ -160,7 +164,16 @@ for service_name, cfg in meta["services"].items():
         deploy[key] = cfg[key]
 
     if deploy:
-        doc["services"][service_name] = {"deploy": deploy}
+        service_doc["deploy"] = deploy
+
+    service_access = cfg.get("access")
+    if service_access is None:
+        service_access = meta.get("access") or {}
+    if service_access:
+        service_doc["x-fluid-access"] = service_access
+
+    if service_doc:
+        doc["services"][service_name] = service_doc
 
 override_path.write_text(yaml.safe_dump(doc, sort_keys=False))
 PY

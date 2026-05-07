@@ -1,19 +1,29 @@
 # Fluid
 
-Fluid is a lightweight personal service plane:
+Fluid is the meta-plane for a local distributed system.
 
-- Tailscale for network identity
-- Docker Swarm for runtime placement
-- `fluid.yml` in each project repo for placement intent
-- GitLab CI or manual `docker stack deploy` for delivery
+- network identity: Tailscale
+- runtime placement: Docker Swarm
+- host truth: `fabric/`
+- mutable cluster truth: `state/cluster-state.json`
+- generated artifacts: `render/`
+- host runtime: `/etc/fluid` and `/var/lib/fluid`
 
-Quick start:
+## Quick start
 
 ```bash
 ./fluid.sh audit
-./fluid.sh bootstrap ubuntu
-./fluid.sh join pve
+./fluid.sh link
+./fluid.sh bootstrap fluid-node-ubuntu
 ./fluid.sh status
+```
+
+After `./fluid.sh link`, you can run `fluid ...` from any directory on that host.
+
+Add the Debian VM on PVE:
+
+```bash
+./fluid.sh join fluid-node-pve
 ```
 
 Project flow:
@@ -22,6 +32,11 @@ Project flow:
 ./fluid.sh project validate /path/to/repo
 ./fluid.sh project render /path/to/repo
 ./fluid.sh project deploy /path/to/repo
+./fluid.sh access render
 ```
 
-Read [CONTRACT.md](./CONTRACT.md) before the first real deployment.
+Read:
+
+- `CONTRACT.md`
+- `LIFECYCLE.md`
+- `docs/architecture/tailscale-access.md`

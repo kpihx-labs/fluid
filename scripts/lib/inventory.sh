@@ -5,11 +5,12 @@ source "$FLUID_ROOT/scripts/lib/common.sh"
 source "$FLUID_ROOT/scripts/lib/resolve.sh"
 
 fluid_state_bootstrap() {
-  fluid_ensure_dir "$(dirname "$FLUID_STATE_PATH")"
+  fluid_ensure_dir "$FLUID_STATE_DIR"
+  fluid_ensure_dir "$FLUID_STATE_DIR/locks"
   if [ ! -f "$FLUID_STATE_PATH" ]; then
     cat >"$FLUID_STATE_PATH" <<'EOF'
 {
-  "version": 2,
+  "version": 3,
   "cluster_name": "fluid",
   "manager_host": null,
   "manager_advertise_addr": null,
@@ -19,7 +20,7 @@ fluid_state_bootstrap() {
   "retired_hosts": [],
   "last_backup": null,
   "portable_truth_generation": 1,
-  "notes": "Mutable runtime state for the Fluid Swarm cluster."
+  "notes": "Mutable runtime state for the Fluid cluster."
 }
 EOF
   fi
@@ -27,7 +28,7 @@ EOF
 
 fluid_require_writable_state() {
   fluid_state_bootstrap
-  [ -w "$FLUID_STATE_PATH" ] || fluid_die "State file '$FLUID_STATE_PATH' is not writable by the current user. Fix ownership before running mutable Fluid commands."
+  [ -w "$FLUID_STATE_PATH" ] || fluid_die "State file '$FLUID_STATE_PATH' is not writable by the current user."
 }
 
 fluid_inventory_hosts() {
@@ -50,7 +51,7 @@ fluid_host_profile_name() {
 }
 
 fluid_profile_path() {
-  echo "$FLUID_PROFILES_DIR/$1.json"
+  printf '%s\n' "$FLUID_PROFILES_DIR/$1.json"
 }
 
 fluid_profile_json() {
@@ -61,6 +62,19 @@ fluid_profile_json() {
   parent="$(jq -r '.extends // empty' "$file")"
   if [ -n "$parent" ]; then
     base="$(fluid_profile_json "$parent")"
+    overlay="$(jq -c 'del(.extends)' "$file")"
+    jq -cn --argjson base "$base" --argjson overlay "$overlay" '$base * $overlay'
+  else
+    jq -c 'del(.extends)' "$file"
+  fi
+}
+
+fluid_policy_json() {
+  local file=$1 parent base overlay
+  [ -f "$file" ] || fluid_die "Policy file '$file' is missing."
+  parent="$(jq -r '.extends // empty' "$file")"
+  if [ -n "$parent" ]; then
+    base="$(fluid_policy_json "$FLUID_POLICIES_DIR/$parent.json")"
     overlay="$(jq -c 'del(.extends)' "$file")"
     jq -cn --argjson base "$base" --argjson overlay "$overlay" '$base * $overlay'
   else
@@ -92,69 +106,80 @@ fluid_host_tailscale_ip() {
   fluid_host_field "$host" '.network.tailscale_ip // empty'
 }
 
-fluid_host_ssh_target() {
-  local host=$1 target
-  target="$(fluid_host_field "$host" '.ssh.target // empty')"
-  if [ -n "$target" ] && [ "$target" != "null" ]; then
-    printf '%s\n' "$target"
-    return 0
-  fi
+fluid_host_role() {
+  local host=$1
+  fluid_host_field "$host" '.role // "observer"'
+}
 
-  target="$(fluid_host_tailscale_name "$host")"
-  if [ -n "$target" ] && [ "$target" != "null" ]; then
-    printf '%s\n' "$target"
-    return 0
-  fi
+fluid_host_execution_capable() {
+  case "$(fluid_host_role "$1")" in
+    manager|worker) echo "true" ;;
+    *) echo "false" ;;
+  esac
+}
 
-  printf '%s\n' "$host"
+fluid_host_survivor_capable() {
+  fluid_effective_host_bool "$1" "SURVIVOR_CAPABLE" '.survivor_capable' "false"
+}
+
+fluid_host_authority_eligible() {
+  fluid_effective_host_bool "$1" "AUTHORITY_ELIGIBLE" '.authority_eligible' "false"
+}
+
+fluid_host_continuity_enabled() {
+  fluid_effective_host_bool "$1" "CONTINUITY_ENABLED" '.continuity_enabled' "$CONTINUITY_ENABLED_DEFAULT"
+}
+
+fluid_host_portable_truth_replica() {
+  fluid_effective_host_bool "$1" "PORTABLE_TRUTH_REPLICA" '.portable_truth_replica' "false"
+}
+
+fluid_host_elevated() {
+  fluid_effective_host_bool "$1" "ELEVATED" '.elevated' "false"
 }
 
 fluid_policy_authority_size() {
-  fluid_effective_global_value "FLUID_DEFAULT_AUTHORITY_SIZE" "$FLUID_AUTHORITY_POLICY_PATH" '.defaults.authority_size' "3"
+  fluid_policy_json "$FLUID_AUTHORITY_POLICY_PATH" | jq -r '.defaults.authority_size // 3'
 }
 
 fluid_policy_min_authority_size() {
-  fluid_effective_global_value "FLUID_MIN_AUTHORITY_SIZE" "$FLUID_AUTHORITY_POLICY_PATH" '.defaults.minimum_authority_size' "1"
+  fluid_policy_json "$FLUID_AUTHORITY_POLICY_PATH" | jq -r '.defaults.minimum_authority_size // 1'
 }
 
 fluid_require_survivor_capable() {
-  fluid_effective_global_bool "FLUID_AUTHORITY_REQUIRE_SURVIVOR_CAPABLE" "$FLUID_AUTHORITY_POLICY_PATH" '.requirements.survivor_capable' "true"
+  fluid_policy_json "$FLUID_AUTHORITY_POLICY_PATH" | jq -r '.requirements.survivor_capable // true' | sed 's/.*/\L&/'
 }
 
 fluid_require_authority_eligible() {
-  fluid_effective_global_bool "FLUID_AUTHORITY_REQUIRE_ELIGIBLE" "$FLUID_AUTHORITY_POLICY_PATH" '.requirements.authority_eligible' "true"
+  fluid_policy_json "$FLUID_AUTHORITY_POLICY_PATH" | jq -r '.requirements.authority_eligible // true' | sed 's/.*/\L&/'
 }
 
-fluid_require_swarm_manager() {
-  fluid_effective_global_bool "FLUID_AUTHORITY_REQUIRE_SWARM_MANAGER" "$FLUID_AUTHORITY_POLICY_PATH" '.requirements.swarm_manager' "true"
+fluid_require_manager_role() {
+  fluid_policy_json "$FLUID_AUTHORITY_POLICY_PATH" | jq -r '.requirements.manager_role // true' | sed 's/.*/\L&/'
 }
 
 fluid_underlay_type() {
-  fluid_effective_global_value "FLUID_UNDERLAY" "$FLUID_NETWORK_POLICY_PATH" '.underlay.type' "tailscale"
+  fluid_policy_json "$FLUID_NETWORK_POLICY_PATH" | jq -r '.underlay.type // "tailscale"'
 }
 
 fluid_underlay_interface() {
-  fluid_effective_global_value "FLUID_UNDERLAY_INTERFACE" "$FLUID_NETWORK_POLICY_PATH" '.underlay.interface' "tailscale0"
+  fluid_policy_json "$FLUID_NETWORK_POLICY_PATH" | jq -r '.underlay.interface // "tailscale0"'
 }
 
 fluid_require_underlay() {
-  fluid_effective_global_bool "FLUID_REQUIRE_TAILSCALE" "$FLUID_NETWORK_POLICY_PATH" '.underlay.require' "true"
+  fluid_policy_json "$FLUID_NETWORK_POLICY_PATH" | jq -r '.underlay.require // true' | sed 's/.*/\L&/'
 }
 
 fluid_tailscale_status_cmd() {
-  fluid_effective_global_value "FLUID_TAILSCALE_STATUS_CMD" "$FLUID_NETWORK_POLICY_PATH" '.underlay.status_command' "tailscale status --json"
+  fluid_policy_json "$FLUID_NETWORK_POLICY_PATH" | jq -r '.underlay.status_command // "tailscale status --json"'
 }
 
 fluid_advertise_mode() {
-  fluid_effective_global_value "FLUID_ADVERTISE_MODE" "$FLUID_NETWORK_POLICY_PATH" '.fluid.advertise_mode' "tailscale-ip"
+  fluid_policy_json "$FLUID_NETWORK_POLICY_PATH" | jq -r '.fluid.advertise_mode // "tailscale-ip"'
 }
 
-fluid_overlay_enabled() {
-  fluid_effective_global_bool "FLUID_OVERLAY_ENABLED" "$FLUID_NETWORK_POLICY_PATH" '.fluid.overlay.enabled' "false"
-}
-
-fluid_overlay_cidr() {
-  fluid_effective_global_value "FLUID_OVERLAY_CIDR" "$FLUID_NETWORK_POLICY_PATH" '.fluid.overlay.cidr' ""
+fluid_continuity_backup_schedule() {
+  fluid_policy_json "$FLUID_CONTINUITY_POLICY_PATH" | jq -r '.defaults.backup_on_calendar // "hourly"'
 }
 
 fluid_local_tailscale_ip() {
@@ -167,36 +192,31 @@ fluid_local_tailscale_ip() {
   fi
 }
 
-fluid_find_host_by_hostname() {
-  local current_hostname current_ts_ip current_hostname_lower
-  current_hostname="$(fluid_detect_hostname)"
+fluid_local_identity_sources_json() {
+  local current_ts_ip
   current_ts_ip="$(fluid_local_tailscale_ip)"
-  current_hostname_lower="$(printf '%s' "$current_hostname" | tr '[:upper:]' '[:lower:]')"
+  jq -cn --arg tailscale_ip "$current_ts_ip" '{tailscale_ip: $tailscale_ip}'
+}
 
+fluid_find_host_by_tailscale_ip() {
+  local current_ts_ip
+  current_ts_ip="$(fluid_local_tailscale_ip)"
+  [ -n "$current_ts_ip" ] || return 1
   while read -r host; do
     [ -n "$host" ] || continue
     if fluid_effective_host_json "$host" | jq -e \
-      --arg current_hostname_lower "$current_hostname_lower" \
-      --arg current_hostname "$current_hostname" \
       --arg current_ts_ip "$current_ts_ip" \
       '
-      (.name | ascii_downcase) as $host_name
-      |
-      (
-        (.match.hostnames // []) | map(ascii_downcase) | index($current_hostname_lower)
-      ) != null
-      or (.network.tailscale_ip == $current_ts_ip)
-      or (.network.tailscale_name == $current_hostname)
-      or ($current_hostname_lower | contains($host_name))
+      .network.tailscale_ip == $current_ts_ip
       ' >/dev/null; then
-      echo "$host"
+      printf '%s\n' "$host"
       return 0
     fi
   done < <(fluid_inventory_hosts)
 }
 
 fluid_local_host_name() {
-  fluid_find_host_by_hostname || true
+  fluid_find_host_by_tailscale_ip || true
 }
 
 fluid_manager_host() {
@@ -220,8 +240,7 @@ fluid_retired_hosts() {
 }
 
 fluid_set_cluster_runtime() {
-  local manager_host=$1 advertise_addr=$2 manager_token=$3 worker_token=$4
-  local tmp
+  local manager_host=$1 advertise_addr=$2 manager_token=$3 worker_token=$4 tmp
   tmp="$(mktemp)"
   jq \
     --arg manager_host "$manager_host" \
@@ -295,28 +314,46 @@ fluid_clear_retired() {
 }
 
 fluid_host_swarm_role() {
+  case "$(fluid_host_role "$1")" in
+    manager) echo "manager" ;;
+    worker) echo "worker" ;;
+    *) echo "none" ;;
+  esac
+}
+
+fluid_host_is_authority_candidate() {
   local host=$1
-  if [ "$(fluid_effective_host_bool "$host" "SWARM_MANAGER_ENABLED" '.capabilities.swarm_manager' "false")" = "true" ] && \
-     [ "$(fluid_effective_host_bool "$host" "AUTHORITY_ELIGIBLE" '.authority_eligible' "false")" = "true" ]; then
-    echo "manager"
-  elif [ "$(fluid_effective_host_bool "$host" "SWARM_WORKER_ENABLED" '.capabilities.swarm_worker' "true")" = "true" ]; then
-    echo "worker"
-  else
-    echo "none"
+  if [ "$(fluid_require_manager_role)" = "true" ] && [ "$(fluid_host_role "$host")" != "manager" ]; then
+    echo "false"
+    return 0
   fi
+  if [ "$(fluid_require_survivor_capable)" = "true" ] && [ "$(fluid_host_survivor_capable "$host")" != "true" ]; then
+    echo "false"
+    return 0
+  fi
+  if [ "$(fluid_require_authority_eligible)" = "true" ] && [ "$(fluid_host_authority_eligible "$host")" != "true" ]; then
+    echo "false"
+    return 0
+  fi
+  echo "true"
 }
 
 fluid_host_swarm_labels_json() {
   local host=$1
   fluid_effective_host_json "$host" | jq -c '
-    (
-      .swarm.labels // {}
-    )
+    (.labels // {})
     * {
       "fluid.host": .name,
       "fluid.platform": .platform,
       "fluid.profile": (.profile // .platform),
-      "fluid.execution_capable": (.execution_capable | tostring)
+      "fluid.role": .role,
+      "fluid.execution_capable": (
+        if (.role == "manager" or .role == "worker") then "true" else "false" end
+      ),
+      "fluid.survivor_capable": (.survivor_capable | tostring),
+      "fluid.authority_eligible": (.authority_eligible | tostring),
+      "fluid.continuity_enabled": (.continuity_enabled | tostring),
+      "fluid.portable_truth_replica": (.portable_truth_replica | tostring)
     }
   '
 }
@@ -324,17 +361,9 @@ fluid_host_swarm_labels_json() {
 fluid_best_authority_candidates() {
   while read -r host; do
     [ -n "$host" ] || continue
-    if [ "$(fluid_require_survivor_capable)" = "true" ] && [ "$(fluid_effective_host_bool "$host" "SURVIVOR_CAPABLE" '.survivor_capable' "false")" != "true" ]; then
-      continue
-    fi
-    if [ "$(fluid_require_authority_eligible)" = "true" ] && [ "$(fluid_effective_host_bool "$host" "AUTHORITY_ELIGIBLE" '.authority_eligible' "false")" != "true" ]; then
-      continue
-    fi
-    if [ "$(fluid_require_swarm_manager)" = "true" ] && [ "$(fluid_effective_host_bool "$host" "SWARM_MANAGER_ENABLED" '.capabilities.swarm_manager' "false")" != "true" ]; then
-      continue
-    fi
+    [ "$(fluid_host_is_authority_candidate "$host")" = "true" ] || continue
     printf '%s;%s\n' \
-      "$(fluid_effective_host_value "$host" "PROMOTION_WEIGHT" '.policy.promotion_weight' "0")" \
+      "$(fluid_effective_host_value "$host" "PROMOTION_WEIGHT" '.authority_weight' "0")" \
       "$host"
   done < <(fluid_inventory_hosts) | sort -t';' -k1,1nr | cut -d';' -f2
 }
@@ -342,8 +371,6 @@ fluid_best_authority_candidates() {
 fluid_portable_truth_replicas() {
   while read -r host; do
     [ -n "$host" ] || continue
-    if [ "$(fluid_effective_host_bool "$host" "PORTABLE_TRUTH_REPLICA" '.capabilities.portable_truth_replica' "false")" = "true" ]; then
-      echo "$host"
-    fi
+    [ "$(fluid_host_portable_truth_replica "$host")" = "true" ] && printf '%s\n' "$host"
   done < <(fluid_inventory_hosts)
 }

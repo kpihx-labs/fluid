@@ -6,7 +6,7 @@ source "$ROOT_DIR/scripts/lib/common.sh"
 source "$ROOT_DIR/scripts/lib/inventory.sh"
 
 target_host="${1:-$(fluid_local_host_name)}"
-[ -n "$target_host" ] || fluid_die "Could not match this machine to config/hosts.json."
+[ -n "$target_host" ] || fluid_die "Could not match this machine to fabric/hosts.json."
 fluid_host_exists "$target_host" || fluid_die "Unknown host '$target_host'."
 
 platform="$(fluid_host_field "$target_host" '.platform')"
@@ -17,12 +17,12 @@ fluid_state_bootstrap
 fluid_require_writable_state
 fluid_info "Joining Fluid with host '$target_host'."
 "$platform_script"
-"$ROOT_DIR/scripts/runtime/swarm.sh" join "$target_host"
+bash "$ROOT_DIR/scripts/runtime/swarm.sh" join "$target_host"
 
-if [ "$(fluid_effective_host_bool "$target_host" "CONTINUITY_ENABLED" '.resources.continuity.enabled // .capabilities.continuity_host' "$CONTINUITY_ENABLED_DEFAULT")" = "true" ]; then
-  "$ROOT_DIR/scripts/runtime/continuity.sh" render "$target_host"
+if [ "$(fluid_host_continuity_enabled "$target_host")" = "true" ]; then
+  bash "$ROOT_DIR/scripts/runtime/continuity.sh" render "$target_host"
   if [ "$(fluid_host_field "$target_host" '.runtime.supports_continuity_apply // false')" = "true" ]; then
-    "$ROOT_DIR/scripts/runtime/continuity.sh" apply "$target_host"
+    bash "$ROOT_DIR/scripts/runtime/continuity.sh" apply "$target_host"
   fi
 fi
 

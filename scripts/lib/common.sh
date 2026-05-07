@@ -9,7 +9,7 @@ set -euo pipefail
 
 LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FLUID_ROOT="$(cd "$LIB_DIR/../.." && pwd)"
-source "$FLUID_ROOT/config/fluid.env"
+source "$FLUID_ROOT/fabric/defaults.env"
 
 fluid_log() {
   local level=$1
@@ -90,6 +90,7 @@ fluid_detect_platform() {
       elif [ -f /etc/os-release ]; then
         . /etc/os-release
         case "${ID:-linux}" in
+          debian) echo "debian" ;;
           ubuntu) echo "ubuntu" ;;
           *) echo "linux" ;;
         esac
@@ -112,35 +113,9 @@ fluid_yesno() {
 
 fluid_is_linux_family() {
   case "${1:-}" in
-    linux|ubuntu|pve) return 0 ;;
+    linux|ubuntu|debian|pve) return 0 ;;
     *) return 1 ;;
   esac
-}
-
-fluid_detect_package_manager() {
-  if command -v apt-get >/dev/null 2>&1; then
-    echo "apt"
-  elif command -v dnf >/dev/null 2>&1; then
-    echo "dnf"
-  elif command -v yum >/dev/null 2>&1; then
-    echo "yum"
-  elif command -v zypper >/dev/null 2>&1; then
-    echo "zypper"
-  elif command -v pacman >/dev/null 2>&1; then
-    echo "pacman"
-  else
-    echo ""
-  fi
-}
-
-fluid_package_list_contains() {
-  local needle=$1
-  shift
-  local item
-  for item in "$@"; do
-    [ "$item" = "$needle" ] && return 0
-  done
-  return 1
 }
 
 fluid_package_present() {
@@ -150,41 +125,15 @@ fluid_package_present() {
     unzip) command -v unzip >/dev/null 2>&1 ;;
     tailscale) command -v tailscale >/dev/null 2>&1 ;;
     docker|docker.io|docker-ce) command -v docker >/dev/null 2>&1 ;;
-    python3-yaml) python3 -c 'import yaml' >/dev/null 2>&1 || /usr/bin/python3 -c 'import yaml' >/dev/null 2>&1 || sudo -H /usr/bin/python3 -m pip install pyyaml --break-system-packages >/dev/null 2>&1 || command -v uv >/dev/null 2>&1 ;;
+    python3-yaml) python3 -c 'import yaml' >/dev/null 2>&1 || /usr/bin/python3 -c 'import yaml' >/dev/null 2>&1 || command -v uv >/dev/null 2>&1 ;;
     rsync) command -v rsync >/dev/null 2>&1 ;;
     systemd) command -v systemctl >/dev/null 2>&1 ;;
     *) command -v "${1:-}" >/dev/null 2>&1 ;;
   esac
 }
 
-fluid_install_packages() {
-  local reason=$1
-  shift
-  [ "$#" -gt 0 ] || return 0
-
-  local manager
-  manager="$(fluid_detect_package_manager)"
-  [ -n "$manager" ] || fluid_die "No supported package manager detected for automatic dependency installation."
-
-  case "$manager" in
-    apt)
-      fluid_run_privileged "$reason (apt update)" apt-get update
-      fluid_run_privileged "$reason" apt-get install -y "$@"
-      ;;
-    dnf)
-      fluid_run_privileged "$reason" dnf install -y "$@"
-      ;;
-    yum)
-      fluid_run_privileged "$reason" yum install -y "$@"
-      ;;
-    zypper)
-      fluid_run_privileged "$reason" zypper --non-interactive install "$@"
-      ;;
-    pacman)
-      fluid_run_privileged "$reason" pacman -Sy --noconfirm "$@"
-      ;;
-    *)
-      fluid_die "Unsupported package manager '$manager'."
-      ;;
-  esac
+fluid_require_service_running() {
+  local service=$1
+  command -v systemctl >/dev/null 2>&1 || fluid_die "systemctl is required to verify service '$service'."
+  systemctl is-active --quiet "$service" || fluid_die "Service '$service' is not active."
 }

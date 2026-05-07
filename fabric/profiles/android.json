@@ -1,0 +1,15 @@
+{
+  "platform": "android",
+  "role": "observer",
+  "survivor_capable": false,
+  "authority_eligible": false,
+  "continuity_enabled": false,
+  "portable_truth_replica": false,
+  "authority_weight": 0,
+  "labels": {
+    "fluid.storage": "ephemeral"
+  },
+  "runtime": {
+    "supports_continuity_apply": false
+  }
+}

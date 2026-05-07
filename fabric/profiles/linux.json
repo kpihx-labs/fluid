@@ -1,0 +1,16 @@
+{
+  "platform": "linux",
+  "role": "worker",
+  "survivor_capable": false,
+  "authority_eligible": false,
+  "continuity_enabled": true,
+  "portable_truth_replica": false,
+  "authority_weight": 50,
+  "labels": {
+    "fluid.storage": "local"
+  },
+  "runtime": {
+    "init_system": "systemd",
+    "supports_continuity_apply": true
+  }
+}

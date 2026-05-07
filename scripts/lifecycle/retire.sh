@@ -11,5 +11,5 @@ fluid_host_exists "$host" || fluid_die "Unknown host '$host'."
 
 fluid_state_bootstrap
 fluid_require_writable_state
-"$ROOT_DIR/scripts/runtime/swarm.sh" retire "$host"
+bash "$ROOT_DIR/scripts/runtime/swarm.sh" retire "$host"
 fluid_info "Retired '$host' from Fluid."

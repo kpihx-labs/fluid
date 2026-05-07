@@ -1,0 +1,75 @@
+{
+  "version": 3,
+  "fluid_name": "fluid",
+  "hosts": [
+    {
+      "name": "fluid-node-ubuntu",
+      "profile": "ubuntu",
+      "elevated": true,
+      "hostnames": ["kpihx-ubuntu", "ubuntu", "fluid-node-ubuntu"],
+      "network": {
+        "tailscale_name": "kpihx-ubuntu",
+        "tailscale_ip": "100.82.95.70"
+      }
+    },
+    {
+      "name": "fluid-node-pve",
+      "profile": "debian",
+      "elevated": true,
+      "hostnames": ["fluid-node-pve", "fluid-node-pve-vm-101"],
+      "network": {
+        "tailscale_name": "fluid-node-pve"
+      }
+    },
+    {
+      "name": "fluid-node-homelab",
+      "profile": "linux",
+      "elevated": false,
+      "hostnames": ["homelab", "docker-host", "fluid-node-homelab"],
+      "network": {
+        "tailscale_name": "kpihx-labs",
+        "tailscale_ip": "100.x.x.x"
+      }
+    },
+    {
+      "name": "fluid-node-mac",
+      "profile": "mac",
+      "elevated": false,
+      "hostnames": ["kpihx-mac", "mac", "fluid-node-mac"],
+      "network": {
+        "tailscale_name": "kpihx-mac",
+        "tailscale_ip": "100.x.x.x"
+      }
+    },
+    {
+      "name": "fluid-node-windows",
+      "profile": "wsl",
+      "elevated": false,
+      "hostnames": ["kpihx-windows", "windows", "fluid-node-windows"],
+      "network": {
+        "tailscale_name": "kpihx-windows",
+        "tailscale_ip": "100.x.x.x"
+      }
+    },
+    {
+      "name": "fluid-node-s25",
+      "profile": "android",
+      "elevated": false,
+      "hostnames": ["kpihx-s25", "s25", "fluid-node-s25"],
+      "network": {
+        "tailscale_name": "kpihx-s25",
+        "tailscale_ip": "100.125.54.1"
+      }
+    },
+    {
+      "name": "fluid-node-tablet",
+      "profile": "android",
+      "elevated": false,
+      "hostnames": ["kpihx-tablet", "tablet", "fluid-node-tablet"],
+      "network": {
+        "tailscale_name": "kpihx-tablet",
+        "tailscale_ip": "100.89.79.87"
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "defaults": {
+    "authority_size": 3,
+    "minimum_authority_size": 1
+  },
+  "requirements": {
+    "manager_role": true,
+    "survivor_capable": true,
+    "authority_eligible": true
+  }
+}

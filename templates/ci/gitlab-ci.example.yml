@@ -1,0 +1,17 @@
+stages:
+  - build
+  - deploy
+
+default:
+  image: registry.gitlab.com/your-group/fluid-ci-runner:python3.12-uv-docker-ssh
+
+build:
+  stage: build
+  script:
+    - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+
+deploy:
+  stage: deploy
+  script:
+    - ./fluid/fluid.sh project deploy .

@@ -1,0 +1,21 @@
+stack: example-app
+compose:
+  - docker-compose.yml
+access:
+  use:
+    - owner
+    - members
+  observe:
+    - owner
+    - elevated
+  modify:
+    - owner
+    - elevated
+  deploy:
+    - owner
+    - elevated
+services:
+  app:
+    replicas: 1
+    constraints:
+      - node.labels.fluid.host == fluid-node-pve
