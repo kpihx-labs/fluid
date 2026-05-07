@@ -55,6 +55,8 @@ Set the concrete `tailscale_ip` for the node entry before running `Fluid`.
 
 ## 7. Join later
 
+(PVE Debian workload host is **`fluid-node-pve-debian`** in `fabric/hosts.json`; create the VM using `docs/architecture/pve-vm-debian-fluid-node-setup.md`.)
+
 ```bash
-./fluid.sh join fluid-node-pve
+./fluid.sh join fluid-node-pve-debian
 ```

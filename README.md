@@ -20,10 +20,14 @@ Fluid is the meta-plane for a local distributed system.
 
 After `./fluid.sh link`, you can run `fluid ...` from any directory on that host.
 
-Add the Debian VM on PVE:
+Create the Debian VM on PVE:
+
+- `docs/architecture/pve-vm-debian-fluid-node-setup.md`
+
+Then on the Debian guest:
 
 ```bash
-./fluid.sh join fluid-node-pve
+./fluid.sh join fluid-node-pve-debian
 ```
 
 Project flow:
@@ -40,3 +44,4 @@ Read:
 - `CONTRACT.md`
 - `LIFECYCLE.md`
 - `docs/architecture/tailscale-access.md`
+- `docs/architecture/pve-vm-debian-fluid-node-setup.md`

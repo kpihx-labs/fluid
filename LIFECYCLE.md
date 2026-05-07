@@ -28,7 +28,7 @@ HOST 2: Debian VM on PVE
   +--> clone Fluid
   |
   v
-./fluid.sh join fluid-node-pve
+./fluid.sh join fluid-node-pve-debian
   |
   +--> docker swarm join
   +--> sync labels
@@ -58,7 +58,7 @@ bootstrap
   -> local docker swarm state
 
 join
-  -> render/continuity/fluid-node-pve/*
+  -> render/continuity/fluid-node-pve-debian/*
   -> /etc/fluid/continuity/*
   -> /etc/systemd/system/fluid-*.service
   -> /etc/systemd/system/fluid-*.timer
@@ -100,7 +100,7 @@ SHARED
   many nodes use it, one carrier
   example:
     nextcloud UI used from ubuntu/mac/windows
-    but carried on fluid-node-pve
+    but carried on fluid-node-pve-debian
 
 REPLICATED
   many nodes use it, many carriers allowed

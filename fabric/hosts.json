@@ -13,10 +13,10 @@
       }
     },
     {
-      "name": "fluid-node-pve",
+      "name": "fluid-node-pve-debian",
       "profile": "debian",
       "elevated": true,
-      "hostnames": ["fluid-node-pve", "fluid-node-pve-vm-101"],
+      "hostnames": ["fluid-node-pve-debian", "fluid-node-pve-vm-101"],
       "network": {
         "tailscale_name": "fluid-node-pve"
       }
