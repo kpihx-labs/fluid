@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Compatibility wrapper kept on purpose.
-# Muscle memory may still call ./uninstall.sh.
+# Older muscle memory may still call ./uninstall.sh.
 # It now maps to a real local Fluid uninstall instead of a cluster retirement.
 
 set -euo pipefail

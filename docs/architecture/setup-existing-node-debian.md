@@ -65,7 +65,7 @@ The meta repo avoids baking service-specific Compose trees, but many Fluid-relat
 ## 4. Clone Fluid
 
 ```bash
-FLUID_PARENT="${FLUID_PARENT:-$HOME/workspace}"
+FLUID_PARENT="${FLUID_PARENT:-$HOME/Workspace}"
 mkdir -p "$FLUID_PARENT/Fluid"
 cd "$FLUID_PARENT/Fluid"
 git clone <YOUR_FLUID_REPO_GIT_URL> fluid

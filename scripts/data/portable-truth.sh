@@ -37,7 +37,7 @@ portable_truth_snapshot() {
     "$repo_name/render" \
     "$repo_name/fluid.sh" \
     "$repo_name/install.sh" \
-    "$repo_name/uninstall.sh" \
+    "$repo_name/purge.sh" \
     "$repo_name/scripts" \
     "$repo_name/templates" \
     "$repo_name/adapters"

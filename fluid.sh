@@ -62,7 +62,7 @@ EOF
   restore) exec bash "$ROOT_DIR/scripts/lifecycle/restore.sh" "$@" ;;
   validate-restore) exec bash "$ROOT_DIR/scripts/lifecycle/validate-restore.sh" "$@" ;;
   retire) exec bash "$ROOT_DIR/scripts/lifecycle/retire.sh" "$@" ;;
-  uninstall) exec bash "$ROOT_DIR/scripts/lifecycle/uninstall.sh" "$@" ;;
+  purge) exec bash "$ROOT_DIR/scripts/lifecycle/purge.sh" "$@" ;;
   access) exec bash "$ROOT_DIR/scripts/lifecycle/access.sh" "$@" ;;
   project) exec bash "$ROOT_DIR/scripts/lifecycle/project.sh" "$@" ;;
   *)

@@ -1,62 +1,71 @@
-SHELL := /bin/bash
+# 🌊 Fluid Meta-Orchestrator Makefile
+# 0 Trust · 100% Control | 0 Magic · 100% Transparency
 
-FLUID := ./fluid.sh
+FLUID  := ./fluid.sh
 BRANCH := $(shell git branch --show-current 2>/dev/null || echo main)
 
-.PHONY: help audit status status-json access-render backup validate-restore check clean-render clean link origin push github-sync
+.PHONY: help status fluid-status git-status audit check sync github gitlab clean purge link backup validate-restore
+.DEFAULT_GOAL := help
 
-help:
-	@printf "make audit\n"
-	@printf "make status\n"
-	@printf "make status-json\n"
-	@printf "make access-render\n"
-	@printf "make backup\n"
-	@printf "make validate-restore\n"
-	@printf "make link\n"
-	@printf "make check\n"
-	@printf "make clean-render\n"
-	@printf "make clean\n"
-	@printf "make origin\n"
-	@printf "make push\n"
+# --- [ General ] ---
 
-audit:
-	$(FLUID) audit
+help: ## Show this help message
+	@echo "Usage: make [target]"
+	@echo ""
+	@grep -E '^[a-zA-Z_-]+:.*?##' $(MAKEFILE_LIST) | \
+	  awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
 
-status:
-	$(FLUID) status
+status: git-status fluid-status ## Check both Fluid and Git status
 
-status-json:
-	$(FLUID) status --json
+git-status: ## Show current git repository status
+	@echo "--- GIT STATUS ---"
+	@git status -s
+	@echo ""
 
-access-render:
-	$(FLUID) access render
+fluid-status: ## Show current Fluid cluster/node status
+	@echo "--- FLUID STATUS ---"
+	@$(FLUID) status
+	@echo ""
 
-backup:
-	$(FLUID) backup
+# --- [ Fluid Operations ] ---
 
-validate-restore:
-	$(FLUID) validate-restore
+audit: ## Run security and consistency audit on meta-state
+	@$(FLUID) audit
 
-link:
-	$(FLUID) link
+check: audit ## Comprehensive check (audit + status-json + access-render)
+	@$(FLUID) status --json
+	@$(FLUID) access render
 
-check: audit status-json access-render
+link: ## Ensure local environment links and dependencies are correct
+	@$(FLUID) link
 
-clean-render:
-	rm -rf render/access render/continuity render/projects
-	mkdir -p render
-	touch render/.gitkeep
+backup: ## Create a point-in-time backup of the meta-state
+	@$(FLUID) backup
 
-clean: clean-render
+validate-restore: ## Validate meta-state restoration from backup
+	@$(FLUID) validate-restore
 
-origin:
-	git remote add origin git@gitlab.com:kpihx-labs/fluid.git 2>/dev/null || git remote set-url origin git@gitlab.com:kpihx-labs/fluid.git
-	git remote -v
+clean: ## Clean local render artifacts
+	@rm -rf render/access render/continuity render/projects
+	@mkdir -p render
+	@touch render/.gitkeep
 
-push: origin
-	git push origin $(BRANCH)
+purge: clean ## Clean everything including local state (CAUTION)
+	@./purge.sh
 
-github-sync:
-	test -n "$$GITHUB_TOKEN"
-	git remote add github https://x-access-token:$$GITHUB_TOKEN@github.com/kpihx-labs/fluid.git 2>/dev/null || git remote set-url github https://x-access-token:$$GITHUB_TOKEN@github.com/kpihx-labs/fluid.git
-	git push github HEAD:refs/heads/main --force
+# --- [ Deployment & Sovereignty ] ---
+
+sync: gitlab github ## Commit and push to both GitLab and GitHub
+	@echo "--- PREPARING SYNC ---"
+	@git add .
+	@git commit -m "chore(meta): sovereign state sync $$(date +'%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+	@echo "--- SYNCING TO GITLAB ---"
+	@git push gitlab $(BRANCH)
+	@echo "--- SYNCING TO GITHUB ---"
+	@git push github $(BRANCH)
+
+gitlab: ## Ensure GitLab remote is configured
+	@git remote add gitlab git@gitlab.com:kpihx-labs/fluid.git 2>/dev/null || git remote set-url gitlab git@gitlab.com:kpihx-labs/fluid.git
+
+github: ## Ensure GitHub remote is configured
+	@git remote add github git@github.com:kpihx-labs/fluid.git 2>/dev/null || git remote set-url github git@github.com:kpihx-labs/fluid.git
