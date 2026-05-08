@@ -3,8 +3,9 @@
 
 FLUID  := ./fluid.sh
 BRANCH := $(shell git branch --show-current 2>/dev/null || echo main)
+M      ?= chore(meta): sovereign state sync $$(date +'%Y-%m-%d %H:%M:%S')
 
-.PHONY: help status fluid-status git-status audit check sync github gitlab clean purge link backup validate-restore
+.PHONY: help status fluid-status git-status audit check sync clean purge link backup validate-restore
 .DEFAULT_GOAL := help
 
 # --- [ General ] ---
@@ -55,17 +56,11 @@ git-status: ## Show current git repository status
 	@git status -s
 	@echo ""
 
-sync: gitlab github ## Commit and push to both GitLab and GitHub
+sync: ## Commit and push to both GitLab and GitHub (use M="message")
 	@echo "--- PREPARING SYNC ---"
 	@git add .
-	@git commit -m "chore(meta): sovereign state sync $$(date +'%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+	@git commit -m "$(M)" || echo "No changes to commit"
 	@echo "--- SYNCING TO GITLAB ---"
 	@git push gitlab $(BRANCH)
 	@echo "--- SYNCING TO GITHUB ---"
 	@git push github $(BRANCH)
-
-gitlab: ## Ensure GitLab remote is configured
-	@git remote add gitlab git@gitlab.com:kpihx-labs/fluid.git 2>/dev/null || git remote set-url gitlab git@gitlab.com:kpihx-labs/fluid.git
-
-github: ## Ensure GitHub remote is configured
-	@git remote add github git@github.com:kpihx-labs/fluid.git 2>/dev/null || git remote set-url github git@github.com:kpihx-labs/fluid.git
