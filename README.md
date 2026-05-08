@@ -22,7 +22,7 @@ After `./fluid.sh link`, you can run `fluid ...` from any directory on that host
 
 Create the Debian VM on PVE:
 
-- `docs/architecture/pve-vm-debian-fluid-node-setup.md`
+- [PVE/vm_debian repository](https://github.com/kpihx-labs/pve/tree/master/vm_debian)
 
 Then on the Debian guest:
 
@@ -44,4 +44,4 @@ Read:
 - `CONTRACT.md`
 - `LIFECYCLE.md`
 - `docs/architecture/tailscale-access.md`
-- `docs/architecture/pve-vm-debian-fluid-node-setup.md`
+- [PVE/vm_debian repository](https://github.com/kpihx-labs/pve/tree/master/vm_debian)
