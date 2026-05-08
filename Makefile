@@ -15,19 +15,14 @@ help: ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?##' $(MAKEFILE_LIST) | \
 	  awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
 
-status: git-status fluid-status ## Check both Fluid and Git status
+status: git-status fluid-status ## Check both Fluid and Git status (Overview)
 
-git-status: ## Show current git repository status
-	@echo "--- GIT STATUS ---"
-	@git status -s
-	@echo ""
+# --- [ Fluid Operations ] ---
 
 fluid-status: ## Show current Fluid cluster/node status
 	@echo "--- FLUID STATUS ---"
 	@$(FLUID) status
 	@echo ""
-
-# --- [ Fluid Operations ] ---
 
 audit: ## Run security and consistency audit on meta-state
 	@$(FLUID) audit
@@ -54,6 +49,11 @@ purge: clean ## Clean everything including local state (CAUTION)
 	@./purge.sh
 
 # --- [ Deployment & Sovereignty ] ---
+
+git-status: ## Show current git repository status
+	@echo "--- GIT STATUS ---"
+	@git status -s
+	@echo ""
 
 sync: gitlab github ## Commit and push to both GitLab and GitHub
 	@echo "--- PREPARING SYNC ---"
